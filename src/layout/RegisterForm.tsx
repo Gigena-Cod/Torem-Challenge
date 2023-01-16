@@ -4,8 +4,16 @@ import FormData from 'form-data';
 
 import { RegisterData } from '../types/register';
 import Field from '../components/Home/Field';
+import useSession from '../hooks/useSession';
+import { useRouter } from 'next/dist/client/router';
 
 function Register() {
+  const router = useRouter();
+  
+  if (localStorage.token) router.push('/chat');
+    
+
+  const { signUp } = useSession()
   const initialValues: RegisterData = {
     name: '',
     lastName: '',
@@ -36,17 +44,20 @@ function Register() {
     }
   };
 
-  const handleRegister = () => {
-    data.append('image', selectedImage);
+  const handleRegister = async () => {
     data.append('name', formData.name);
     data.append('lastName', formData.lastName);
     data.append('email', formData.email);
     data.append('password', formData.password);
+    data.append('image', selectedImage);
     /* 
-      TODO: 
-      1. Make a new user
-      2. Display a sucess notification (or error).
+    TODO ✔   
+    
+    1. Make a new user 
+    2. Display a sucess notification (or error). 
+
     */
+    signUp(data)
   };
 
   return (

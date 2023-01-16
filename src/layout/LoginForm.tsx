@@ -1,16 +1,27 @@
 import Field from '../components/Home/Field';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import FormData from 'form-data';
 import Link from 'next/link';
 import { LoginData } from '../types/login';
+import useSession from '../hooks/useSession';
+import { useRouter } from 'next/dist/client/router';
 
 function LoginForm() {
+  
+  const router = useRouter();
+  useEffect(() => {
+    if (localStorage.token) router.push('/chat');
+  }, []);
+
+  const { login } = useSession();
+
   const initialValues: LoginData = {
     email: '',
     password: ''
   };
 
   const [formData, setFormData] = useState<LoginData>(initialValues);
+
   const data = new FormData();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -23,10 +34,12 @@ function LoginForm() {
     data.append('email', formData.email);
     data.append('password', formData.password);
     /* 
-      TODO: 
-      1. Check login
+      TODO ✔
+      1. Check login 
       2. Handle errors (if there is at least one) 
     */
+
+    login(data);
   };
 
   const resetForm = () => {

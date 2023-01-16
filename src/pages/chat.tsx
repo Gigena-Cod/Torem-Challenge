@@ -15,8 +15,11 @@ import ConfigDropdown from '../layout/Dropdowns/Config';
 import SearchBar from '../components/SearchBar';
 import ChatTab from '../components/HomeChat/ChatTab';
 import ChatMessages from '../components/HomeChat/ChatMessages';
+import useUser from '../hooks/useUser';
+
 
 function HomeChat() {
+
   const chatHeaderInitialState: Chat = {
     messages: [],
     messageIdToDisplay: '',
@@ -24,14 +27,17 @@ function HomeChat() {
     name: ''
   };
 
+   const { getDataUser } = useUser()
   const [msgEntry, setMsgEntry] = useState<string>('');
   const [selectedChat, setSelectedChat] = useState<string>('');
   const [userChatData, setUserChatData] = useState(chatHeaderInitialState);
   const [configOpen, setConfigOpen] = useState<Boolean>(false);
 
+  
   const ref = useRef<any>();
 
   const chats = useAppSelector(getChats);
+
   const dispatch = useAppDispatch();
 
   const userData = useAppSelector(getUser);
@@ -41,6 +47,8 @@ function HomeChat() {
   const logo = empty as unknown as LogoType;
 
   useEffect(() => {
+    
+    getDataUser()
     /* 
       TODO: 
       1. Get user data 

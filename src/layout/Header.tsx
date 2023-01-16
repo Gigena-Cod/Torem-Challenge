@@ -1,19 +1,22 @@
 import Link from 'next/link';
-
 import logo from '../assets/images/logo_chatter_color_2.png';
 import { Container, Nav, Navbar } from 'react-bootstrap';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { getUser, setLogoutData } from '../redux/userSlice';
 import { LogoType } from '../types/chat';
+import { useRouter } from 'next/dist/client/router';
 
 function Header() {
   const image = logo as unknown as LogoType;
-
+  const router = useRouter();
   const userData = useAppSelector(getUser);
   const dispatch = useAppDispatch();
 
   const signOff = () => {
+    localStorage.removeItem('token');
+    localStorage.clear();
     dispatch(setLogoutData());
+    router.push('/');
   };
 
   return (
@@ -26,9 +29,9 @@ function Header() {
         <Navbar.Collapse className="justify-content-end">
           {userData.authToken ? (
             <Nav className="d-flex gap-3">
-              <Link href="/" className="nav-item" onClick={signOff}>
+              <div className="nav-item cursor-pointer" onClick={signOff}>
                 Abandonar Sesión
-              </Link>
+              </div>
             </Nav>
           ) : (
             <Nav className="d-flex gap-3">
