@@ -3,12 +3,17 @@ import styled from 'styled-components';
 
 import { IoCheckmarkDoneOutline } from 'react-icons/io5';
 import { BsThreeDotsVertical } from 'react-icons/bs';
-import { ChatTabProps } from '../../types/chat';
+import { ChatTabProps, TicketData } from '../../types/chat';
 import ConfirmDialog from '../ConfirmDialog';
-import ContextMenu from '../ContextMenu';
-import ChatTabContextMenu from './ChatTabContextMenu';
+import { DeleteChat } from '../../network/lib/chats';
+import { useAppDispatch } from '../../redux/hooks';
+import { fetchChats } from '../../redux/chatsSlice';
+import ChatOptions from './ChatTabOptions';
+import TicketsModal from '../TicketsModal';
+import { MockTicketData } from '../../utils/mockData';
 
 const Container = styled.div<{ isSelected: boolean }>`
+  position: relative;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -97,57 +102,90 @@ const ChatTabDots = styled.div`
 function ChatTab(chatTabProps: ChatTabProps) {
   const { name, image: photo, chatId, messages, selectedChat, onClick } = chatTabProps;
 
-  const [isOpen, setIsOpen] = useState(false);
-
   const lastMessage = messages[0]
     ? messages.slice(-1)[0].message.slice(0, 55) + '...'
     : 'No hay mensajes.';
+
   const lastMessageTime = messages[0] ? messages.slice(-1)[0].timeDate.slice(11, 16) + ' p.m.' : '';
 
-  const eraseChat = () => {
+  const dispatch = useAppDispatch();
+
+  const eraseChat = async () => {
+    await DeleteChat(chatId);
+    dispatch(fetchChats());
+
     /* 
-      TODO: 
+      TODO: ✔
       1. Delete chat
     */
   };
 
-  const handleOpenModal = () => {
-    setIsOpen(true);
+  // DELETE CHAT MODAL
+  const [isConfirmDialog, setIsConfirmDialog] = useState(false);
+
+  const handleDeleteChat = () => {
+    setIsConfirmDialog(true);
+    setIsOpenChatOptions(false);
+  };
+
+  // CHAT OPTION
+  const [isOpenChatOptions, setIsOpenChatOptions] = useState(false);
+  const handleOpenChatsOptions = () => {
+    setIsOpenChatOptions(true);
+  };
+
+  // TICKETS
+  const [isShowTickets, setIsShowTickets] = useState(false);
+  const [ticketSelected, setTicketSelected] = useState<TicketData>(MockTicketData[0]);
+
+  const handleShowTickets = (open: boolean) => {
+    open ? setTicketSelected(MockTicketData[0]) : setTicketSelected(MockTicketData[1]);
+    setIsShowTickets(true);
+    setIsOpenChatOptions(false);
   };
 
   return (
-    <ContextMenu menuComponent={<ChatTabContextMenu />}>
-      <Container id="chatTab" isSelected={selectedChat === chatId} onClick={onClick}>
-        <Wrapper>
-          <ChatPhoto>
-            <img src={`${photo}`} alt="ProfilePhoto" className="image" />
-          </ChatPhoto>
-          <ChatInfo>
-            <ChatInfoWrapper>
-              <Name>{name}</Name>
-              <LastMessageTime>{lastMessageTime}</LastMessageTime>
-            </ChatInfoWrapper>
-            <ChatPreview>
-              <div>
-                <IoCheckmarkDoneOutline />
-              </div>
-              <MessagePreview>{lastMessage}</MessagePreview>
-            </ChatPreview>
-          </ChatInfo>
-        </Wrapper>
-        <ChatTabDots className="dots" onClick={handleOpenModal}>
-          <BsThreeDotsVertical />
-        </ChatTabDots>
+    <Container id="chatTab" isSelected={selectedChat === chatId} onClick={onClick}>
+      <Wrapper>
+        <ChatPhoto>
+          <img src={`http://localhost:8080/${photo}`} alt="ProfilePhoto" className="image" />
+        </ChatPhoto>
+        <ChatInfo>
+          <ChatInfoWrapper>
+            <Name>{name}</Name>
+            <LastMessageTime>{lastMessageTime}</LastMessageTime>
+          </ChatInfoWrapper>
+          <ChatPreview>
+            <div>
+              <IoCheckmarkDoneOutline />
+            </div>
+            <MessagePreview>{lastMessage}</MessagePreview>
+          </ChatPreview>
+        </ChatInfo>
+      </Wrapper>
+      <ChatTabDots className="dots" onClick={handleOpenChatsOptions}>
+        <BsThreeDotsVertical />
+      </ChatTabDots>
 
-        <ConfirmDialog
-          title="Eliminar chat"
-          text="¿Está seguro que desea borrar la conversación?"
-          handleOk={eraseChat}
-          handleCancel={setIsOpen}
-          isOpen={isOpen}
+      <ConfirmDialog
+        title="Eliminar chat"
+        text="¿Está seguro que desea borrar la conversación?"
+        handleOk={eraseChat}
+        handleCancel={setIsConfirmDialog}
+        isOpen={isConfirmDialog}
+      />
+      {isShowTickets && (
+        <TicketsModal
+          handlerCloseModal={setIsShowTickets}
+          TicketInformation={ticketSelected}
         />
-      </Container>
-    </ContextMenu>
+      )}
+      <ChatOptions
+        isOpen={isOpenChatOptions}
+        handleShowTickets={handleShowTickets}
+        handleDeleteChat={handleDeleteChat}
+      />
+    </Container>
   );
 }
 

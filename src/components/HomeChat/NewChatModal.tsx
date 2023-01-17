@@ -2,24 +2,30 @@ import { Modal } from 'react-bootstrap';
 import { useState } from 'react';
 import FormData from 'form-data';
 
-import { ChatModalProps } from '../../types/chat';
+import { ChatModalProps } from '../../types/chat'; 
+import { PostNewChat } from '../../network/lib/chats';
 
 function NewChatModal(chatModalProps: ChatModalProps) {
-  const { isOpen, setIsOpen } = chatModalProps;
+  const { isOpen, setIsOpen ,getChatsData} = chatModalProps;
 
   const [selectedImage, setSelectedImage] = useState<any | null>(null);
   const [newChatName, setNewChatName] = useState<any | null>();
 
   const data = new FormData();
 
-  const createChat = () => {
+  const createChat = async () => {
     data.append('name', newChatName);
     data.append('image', selectedImage);
+
+    await PostNewChat(data);
+    getChatsData();
+    handleClose();
     /*
-        TODO:
-        1. Create new chat and
+        TODO: ✔
+
+        1. Create new chat and 
         2. Update chats queue with getChatsData to display it
-        3. Close popup with handleClose
+        3. Close popup with handleClose  
     */
   };
 

@@ -5,13 +5,14 @@ export interface UserDataState {
   lastName?: string;
   password?: string;
   email?: string;
-  photo?: string;
+  image?: string;
   userId: string;
   authToken?: string;
 }
 
 export interface ChatsState {
   chats: ChatTabProps[];
+  updatedChats?: boolean;
   isAllowedExpand: boolean;
 }
 
@@ -62,7 +63,7 @@ export interface MyProfileProps {
   name?: string;
   lastName?: string;
   email?: string;
-  photo?: string;
+  image?: string;
 }
 
 export interface ChatTabProps {
@@ -91,14 +92,14 @@ export interface ConfirmDialogProps {
 }
 
 export enum TicketStatus {
-  OPEN,
-  CLOSED
+  CLOSED,
+  OPEN
 }
 
 export enum TicketPriority {
-  HIGH,
-  MEDIUM,
-  LOW
+  HIGH = 'ALTA',
+  MEDIUM = 'MEDIA',
+  LOW = 'BAJA'
 }
 
 export interface TicketData {

@@ -3,18 +3,14 @@ import React, { useEffect, useState } from 'react';
 import FormData from 'form-data';
 import Link from 'next/link';
 import { LoginData } from '../types/login';
-import useSession from '../hooks/useSession';
-import { useRouter } from 'next/dist/client/router';
+import { Login } from '../network/lib/auth';
+import { useAppDispatch } from '../redux/hooks';
+import { setUserData } from '../redux/userSlice';
+import { io } from 'socket.io-client';
 
 function LoginForm() {
-  
-  const router = useRouter();
-  useEffect(() => {
-    if (localStorage.token) router.push('/chat');
-  }, []);
-
-  const { login } = useSession();
-
+ 
+  const dispatch = useAppDispatch();
   const initialValues: LoginData = {
     email: '',
     password: ''
@@ -29,7 +25,7 @@ function LoginForm() {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     resetForm();
     data.append('email', formData.email);
     data.append('password', formData.password);
@@ -39,7 +35,8 @@ function LoginForm() {
       2. Handle errors (if there is at least one) 
     */
 
-    login(data);
+    const user = await Login(data);
+    if (user) dispatch(setUserData(user));
   };
 
   const resetForm = () => {

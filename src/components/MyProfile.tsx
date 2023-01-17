@@ -1,12 +1,12 @@
 import { MyProfileProps } from '../types/chat';
 
 function MyProfile(myProfileProps: MyProfileProps) {
-  const { name, lastName, email, photo } = myProfileProps;
+  const { name, lastName, email, image } = myProfileProps;
 
   return (
     <div className="myProfile d-flex flex-row gap-3 align-items-center text-no-selection">
       <div className="myProfilePhoto">
-        <img src={`http://localhost:8080/${photo}`} alt="ProfilePhoto" className="image" />
+        <img src={`http://localhost:8080/${image}`} alt="ProfilePhoto" className="image" />
       </div>
       <div className="myProfileData">
         <div className="myProfileId fw-bold">

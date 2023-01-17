@@ -49,7 +49,7 @@ function ChatHeader(userChatData: Chat) {
   return (
     <Container>
       <ProfilePhoto>
-        {name && image ? <img src={`${image}`} className="image" alt="UserImage" /> : null}
+        {name && image ? <img src={`http://localhost:8080/${image}`} className="image" alt="UserImage" /> : null}
       </ProfilePhoto>
       <ContactName>{name}</ContactName>
       <IconContainer>

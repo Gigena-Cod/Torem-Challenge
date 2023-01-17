@@ -1,12 +1,19 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import type { RootState } from './store';
 import { UserDataState } from '../types/chat';
+import { GetUser } from '../network/lib/users';
+
+// ACTION
+export const fetchUser = createAsyncThunk('user/fetchUser', async () => {
+  const user = await GetUser();
+  return user || initialState;
+});
 
 const initialState: UserDataState = {
   name: '',
   lastName: '',
   email: '',
-  photo: '',
+  image: '',
   userId: '',
   authToken: ''
 };
@@ -26,16 +33,26 @@ export const userSlice = createSlice({
       state.name = action.payload.name;
       state.lastName = action.payload.lastName;
       state.email = action.payload.email;
-      state.photo = action.payload.photo;
+      state.image = action.payload.image;
     },
     setLogoutData: (state) => {
       state.name = '';
       state.lastName = '';
       state.email = '';
-      state.photo = '';
+      state.image = '';
       state.userId = '';
       state.authToken = '';
     }
+  },
+  extraReducers(builder) {
+    builder.addCase(fetchUser.fulfilled, (state, action: PayloadAction<UserDataState>) => {
+      state.authToken = action.payload.authToken;
+      state.name = action.payload.name;
+      state.userId = action.payload.userId;
+      state.image = action.payload.image;
+      state.lastName = action.payload.lastName;
+      state.email = action.payload.email;
+    });
   }
 });
 

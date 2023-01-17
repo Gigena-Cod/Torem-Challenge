@@ -6,20 +6,21 @@ import { HiPhoneMissedCall } from 'react-icons/hi';
 
 import empty from '../assets/images/empty.png';
 import MyProfile from '../components/MyProfile';
-import { useAppDispatch, useAppSelector } from '../redux/hooks';
-import { getUser } from '../redux/userSlice';
+import { fetchUser, getUser } from '../redux/userSlice';
 import { Chat, LogoType } from '../types/chat';
-import { getChats, setIsAllowedExpand } from '../redux/chatsSlice';
+import { fetchChats, getChats, setIsAllowedExpand, setUpdatedChats } from '../redux/chatsSlice';
 import ChatHeader from '../components/HomeChat/ChatHeader';
 import ConfigDropdown from '../layout/Dropdowns/Config';
 import SearchBar from '../components/SearchBar';
 import ChatTab from '../components/HomeChat/ChatTab';
 import ChatMessages from '../components/HomeChat/ChatMessages';
-import useUser from '../hooks/useUser';
+import { useAppDispatch, useAppSelector } from '../redux/hooks';
+import { PostSendMessage } from '../network/lib/chats';
+import { NotificationFailure } from '../components/Notifications';
 
+import io from 'socket.io-client';
 
 function HomeChat() {
-
   const chatHeaderInitialState: Chat = {
     messages: [],
     messageIdToDisplay: '',
@@ -27,14 +28,14 @@ function HomeChat() {
     name: ''
   };
 
-   const { getDataUser } = useUser()
   const [msgEntry, setMsgEntry] = useState<string>('');
   const [selectedChat, setSelectedChat] = useState<string>('');
   const [userChatData, setUserChatData] = useState(chatHeaderInitialState);
   const [configOpen, setConfigOpen] = useState<Boolean>(false);
 
-  
   const ref = useRef<any>();
+  const socketUrl = 'http://localhost:8080';
+  let socket = io(socketUrl);
 
   const chats = useAppSelector(getChats);
 
@@ -46,48 +47,47 @@ function HomeChat() {
 
   const logo = empty as unknown as LogoType;
 
-  useEffect(() => {
-    
-    getDataUser()
-    /* 
-      TODO: 
-      1. Get user data 
-      2. Get chats data
-    */
+  useEffect(() => {    
+    dispatch(fetchChats());
+    dispatch(fetchUser());   
+
+    socket.on('chats', (message) => {
+      if (message.action === 'SentNewMessage') {
+        console.log('Mensaje llego al backend');
+      }
+      if (message.action === 'ReceivedNewMessage') {
+        console.log('Se guardo respuesta en el backend');
+        dispatch(fetchChats());
+      }
+    });
+
+    socket.off('chats', (message) => {
+      alert('socket.off');
+    });
   }, []);
-
-  useEffect(() => {
-    if (ref.current) {
-      ref.current.scrollTop = ref.current.scrollHeight;
-      setConfigOpen((isOpen) => isOpen && chats.isAllowedExpand);
-
-      // Update scroll position
-      positionRef.current.scrollIntoView();
-
-      /*
-        TODO: 
-          1. Listen the socket
-          2. Get chat data
-          3. Set the socket off and return void to prevent useless renders
-      */
-    }
-  }, [chats]);
 
   const handleMsgEntry = (e: React.ChangeEvent<HTMLInputElement>) => {
     setMsgEntry(e.target.value);
   };
 
-  const handleSendMsg = () => {
+  const handleSendMsg = async () => {
     if (msgEntry !== '') {
+      const message = {
+        message: msgEntry
+      };
+      await PostSendMessage(selectedChat, message);
+      getChatsData();
       setMsgEntry('');
+
+      return () => {
+        socket.off('chats', () => (response) => console.log(response));
+      };
       /*
-        TODO:
-        1. Send message
+      TODO: ✔
+      1. Send message
       */
     } else {
-      /* TODO: 
-        1. Show error notification
-      */
+      NotificationFailure('Por favor, debe completar el mensaje');
     }
   };
 
@@ -106,7 +106,11 @@ function HomeChat() {
   };
 
   const getChatsData = () => {
-    /* TODO: 
+    console.log('fetchChats');
+    dispatch(fetchChats());
+        
+      /* 
+      TODO: ✔
       Get all chats data 
     */
   };
@@ -119,7 +123,7 @@ function HomeChat() {
             name={userData?.name}
             lastName={userData?.lastName}
             email={userData?.email}
-            photo={userData?.photo}
+            image={userData?.image}
           />
           <div className="position-relative cursor-pointer d-flex">
             <span
@@ -141,7 +145,7 @@ function HomeChat() {
               <ChatTab
                 key={i}
                 name={tab.name}
-                image={tab.photo}
+                image={tab.image}
                 chatId={tab.chatId}
                 messages={tab.messages}
                 userData={userData}

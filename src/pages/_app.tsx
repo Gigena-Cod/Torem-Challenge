@@ -10,7 +10,7 @@ import '../index.css';
 import 'react-toastify/dist/ReactToastify.css';
 import Header from '../layout/Header';
 import Footer from '../layout/Footer';
-import { store } from '../redux/store';
+import store from '../redux/store';
 
 function MyApp(appProps: AppProps) {
   const { Component, pageProps } = appProps;
